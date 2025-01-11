@@ -1,9 +1,9 @@
 [package]
 name = "obs-cmd"
-version = "0.18.1"
+version = "0.18.2"
 edition = "2021"
-description = "A minimal command to control obs via obs-websocket"
-authors = ["Luigi Maselli <luigi@grigio.org>"]
+description = "A command to control obs via obs-websocket"
+authors = ["Damon Payn <damonpayn@hotmail.co.uk>"]
 rust-version = "1.78.0"
 
 [[bin]]
