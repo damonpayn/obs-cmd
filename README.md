@@ -134,7 +134,7 @@ This can be set by amending the systemd environment variables in the service fil
 
 ```
 [Service]
-Environment="OBS_API_PASSWORD=<password"
+Environment="OBS_API_PASSWORD=<password>"
 ```
 
 With your OBS websocket password.
