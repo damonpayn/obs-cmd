@@ -71,6 +71,13 @@ pub enum VirtualCamera {
 }
 
 #[derive(Subcommand, Clone, Debug)]
+pub enum StudioMode {
+    Start,
+    Stop,
+    Toggle
+}
+
+#[derive(Subcommand, Clone, Debug)]
 pub enum Streaming {
     Start,
     Stop,
@@ -105,6 +112,22 @@ pub enum SceneCollection {
     }
 }
 
+#[derive(Subcommand, Clone, Debug)]
+pub enum Profile {
+    Current,
+    Switch{
+        profile_name: String,
+    }
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum PreviewScene {
+    Current,
+    Switch{
+        scene_name: String,
+    }
+}
+
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
@@ -126,10 +149,19 @@ pub enum Commands {
     SceneCollection (SceneCollection),
 
     #[clap(subcommand)]
+    Profile (Profile),
+
+    #[clap(subcommand)]
+    PreviewScene (PreviewScene),
+
+    #[clap(subcommand)]
     Replay(Replay),
 
     #[clap(subcommand)]
     VirtualCamera(VirtualCamera),
+
+    #[clap(subcommand)]
+    StudioMode (StudioMode),
 
     #[clap(subcommand)]
     Streaming(Streaming),
@@ -168,6 +200,9 @@ pub enum Commands {
 
     TriggerHotkey {
         name: String,
+    },
+
+    TriggerTransition{
     }
 
 }

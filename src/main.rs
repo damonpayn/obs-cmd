@@ -64,6 +64,38 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
             }
         }
 
+        Commands::Profile(action) => {
+            use Profile::*;
+
+            match action {
+                Current => {
+                    let profile_name = client.profiles().current().await.and_then(|r| Ok(r))?;
+                    println!("{:?}", profile_name);
+                },
+                Switch{profile_name} => {
+                    let res = client.profiles().set_current(profile_name).await;
+                    println!("Set current profile: {:?}", profile_name);
+                    println!("Result: {:?}", res);
+                }
+            }
+        }
+
+        Commands::PreviewScene(action) => {
+            use PreviewScene::*;
+
+            match action{
+                Current => {
+                    let scene_name = client.scenes().current_preview_scene().await.and_then(|r| Ok(r))?;
+                    println!("{:?}", scene_name);
+                },
+                Switch{scene_name} => {
+                    let res = client.scenes().set_current_preview_scene(scene_name).await;
+                    println!("Set current preview scene: {:?}", scene_name);
+                    println!("Result: {:?}", res);
+                }
+            }
+        }
+
         Commands::Info => {
             let version = client.general().version().await?;
             println!("Version: {:?}", version);
@@ -182,6 +214,37 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
                     println!("Result: {:?}", res);
                 }
             }
+        }
+
+        Commands::StudioMode(action) => {
+            use StudioMode::*;
+            println!("StudioMode {:?}", action);
+
+            match action {
+                Start => {
+                    let res = client.ui().set_studio_mode_enabled(true).await;
+                    println!("Result: {:?}", res);
+                }
+                Stop => {
+                    let res = client.ui().set_studio_mode_enabled(false).await;
+                    println!("Result: {:?}", res);
+                }
+                Toggle => {
+                    let res = client.ui().set_studio_mode_enabled(!client.ui().studio_mode_enabled().await?).await;
+                    println!("Result: {:?}", res);
+                }
+            }
+
+            //let enabled: bool = match action.as_str() {
+            //    "start" => true,
+            //    "stop" => false,
+            //    "toggle" => !client.ui().studio_mode_enabled().await?,
+            //    _ => {
+            //        println!("Invalid studio mode action: {:?}", action)
+            //    }
+            //};
+            //let res = client.ui().set_studio_mode_enabled(enabled).await;
+            //println!("Result: {:?}", res);
         }
 
         Commands::Replay(action) => {
@@ -323,6 +386,14 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
 
             let res = client.hotkeys().trigger_by_name(name).await;
             println!("Result: {:?}", res);
+        }
+
+        Commands::TriggerTransition {
+        } => {
+            println!("Trigger Transition");
+
+            let res = client.transitions().trigger().await;
+            println!("Results: {:?}", res)
         }
 
     }
