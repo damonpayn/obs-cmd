@@ -1,39 +1,41 @@
 mod command;
 use command::*;
 
+use obws::client::Client as Client;
 use clap::Parser;
-use obws::{requests::filters::SetEnabled as SetEnabledFilter, Client};
-use obws::{requests::scene_items::SetEnabled as SetEnabledItem};
-use obws::{requests::scene_items::Id as IdItem};
-use obws::{requests::sources::SaveScreenshot};
+use obws::requests::filters::SetEnabled as SetEnabledFilter;
+use obws::requests::scene_items::SetEnabled as SetEnabledItem;
+use obws::requests::scene_items::Id as IdItem;
+use obws::requests::sources::SaveScreenshot;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
-let client = match std::env::var("OBS_WEBSOCKET_URL") {
-    Ok(url) => {
-        let parsed_url = url::Url::parse(&url).expect("Invalid OBS_WEBSOCKET_URL format");
-        let hostname = parsed_url.host_str().expect("Hostname not found in OBS_WEBSOCKET_URL").to_string();
-        let port = parsed_url.port().expect("Port not found in OBS_WEBSOCKET_URL");
-        let password = parsed_url.path_segments().and_then(|mut segments| segments.next()).ok_or(url::ParseError::RelativeUrlWithoutBase)?;
+    let client = match std::env::var("OBS_WEBSOCKET_URL") {
+        Ok(url) => {
+            let parsed_url = url::Url::parse(&url).expect("Invalid OBS_WEBSOCKET_URL format");
+            let hostname = parsed_url.host_str().expect("Hostname not found in OBS_WEBSOCKET_URL").to_string();
+            let port = parsed_url.port().expect("Port not found in OBS_WEBSOCKET_URL");
+            let password = parsed_url.path_segments().and_then(|mut segments| segments.next()).ok_or(url::ParseError::RelativeUrlWithoutBase)?;
 
-        // let password = parsed_url.password().map(|p| p.to_string());
-        Client::connect(hostname, port, Some(password)).await?
-    },
-    Err(_) => match cli.websocket {
-        Some(ObsWebsocket {
-            hostname,
-            port,
-            password,
-        }) => Client::connect(hostname, port, password).await?,
-        None => Client::connect("localhost", 4455, Some("secret")).await?,
-    },
-};
+            // let password = parsed_url.password().map(|p| p.to_string());
+            Client::connect(hostname, port, Some(password)).await?
+        },
+        Err(_) => match cli.websocket {
+            Some(ObsWebsocket {
+                hostname,
+                port,
+                password,
+            }) => Client::connect(hostname, port, password).await?,
+            None => Client::connect("localhost", 4455, Some("secret")).await?,
+        },
+    };
 
     match &cli.command {
         Commands::Scene(action) => {
             use Scene::*;
+            println!("Scene: {:?}", action);
 
             match action {
                 Current => {
@@ -50,6 +52,7 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
 
         Commands::SceneCollection(action) => {
             use SceneCollection::*;
+            println!("SceneCollection: {:?}", action);
 
             match action {
                 Current => {
@@ -66,6 +69,7 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
 
         Commands::Profile(action) => {
             use Profile::*;
+            println!("Profile: {:?}", action);
 
             match action {
                 Current => {
@@ -82,8 +86,9 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
 
         Commands::PreviewScene(action) => {
             use PreviewScene::*;
+            println!("PreviewScene: {:?}", action);
 
-            match action{
+            match action {
                 Current => {
                     let scene_name = client.scenes().current_preview_scene().await.and_then(|r| Ok(r))?;
                     println!("{:?}", scene_name);
@@ -92,6 +97,39 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
                     let res = client.scenes().set_current_preview_scene(scene_name).await;
                     println!("Set current preview scene: {:?}", scene_name);
                     println!("Result: {:?}", res);
+                }
+            }
+        }
+
+        Commands::Transition(action) => {
+            use Transition::*;
+            println!("Transition: {:?}", action);
+
+            match action {
+                Switch{transition_name} => {
+                    let res = client.transitions().set_current(transition_name).await;
+                    println!("Set current transition: {:?}", transition_name);
+                    println!("Result: {:?}", res);
+                },
+                Trigger => {
+                    let res = client.transitions().trigger().await;
+                    println!("Result: {:?}", res)
+                }
+            }
+        }
+
+        Commands::Hotkey(action) => {
+            use Hotkey::*;
+            println!("Hotkey: {:?}", action);
+
+            match action {
+                List => {
+                    let res = client.hotkeys().list().await;
+                    println!("Result: {:?}", res);
+                },
+                Trigger{hotkey_name} => {
+                    let res = client.hotkeys().trigger_by_name(hotkey_name).await;
+                    println!("Result: {:?}", res)
                 }
             }
         }
@@ -234,17 +272,6 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
                     println!("Result: {:?}", res);
                 }
             }
-
-            //let enabled: bool = match action.as_str() {
-            //    "start" => true,
-            //    "stop" => false,
-            //    "toggle" => !client.ui().studio_mode_enabled().await?,
-            //    _ => {
-            //        println!("Invalid studio mode action: {:?}", action)
-            //    }
-            //};
-            //let res = client.ui().set_studio_mode_enabled(enabled).await;
-            //println!("Result: {:?}", res);
         }
 
         Commands::Replay(action) => {
@@ -377,23 +404,6 @@ let client = match std::env::var("OBS_WEBSOCKET_URL") {
                 })
                 .await;
             println!("Result: {:?}", res);
-        }
-
-        Commands::TriggerHotkey {
-            name
-        } => {
-            println!("Trigger Hotkey: {:?}", name);
-
-            let res = client.hotkeys().trigger_by_name(name).await;
-            println!("Result: {:?}", res);
-        }
-
-        Commands::TriggerTransition {
-        } => {
-            println!("Trigger Transition");
-
-            let res = client.transitions().trigger().await;
-            println!("Results: {:?}", res)
         }
 
     }

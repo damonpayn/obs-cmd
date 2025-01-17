@@ -18,7 +18,12 @@ obs-cmd scene switch <scene_name>
 obs-cmd scene-collection switch <scene_collection_name>
 obs-cmd scene-item <command> <scene_item_name>
     <command> = enable / disable / toggle
-obs-cmd preview-scene switch <preview_scene_name>
+obs-cmd preview-scene <command> <preview_scene_name>
+    <command> = current / switch
+obs-cmd hotkeys <command>
+    <command> = list / trigger <hotkey_name>
+obs-cmd transitions <command>
+    <command> = switch <transition_name> / trigger
 obs-cmd filter <command> <source_name> <filter_name>
     <command> = enable / disable / toggle
 obs-cmd audio <command> <device>
@@ -34,8 +39,6 @@ obs-cmd studio-mode <command>
 obs-cmd save-screenshot <source> <format> <file_path> [--width WIDTH] [--height HEIGHT] [--compression-quality COMPRESSION_QUALITY]
 obs-cmd replay <command>
     <command> = start / stop / toggle / save / status / last-replay
-obs-cmd trigger-hotkey <hotkey_name>
-obs-cmd trigger-transition
 obs-cmd info
 obs-cmd --websocket obsws://localhost:4455/secret info # You can override the default `obsws` url
 OBS_WEBSOCKET_URL=obsws://localhost:4455/secret obs-cmd info

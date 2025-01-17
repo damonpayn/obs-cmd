@@ -128,6 +128,22 @@ pub enum PreviewScene {
     }
 }
 
+#[derive(Subcommand, Clone, Debug)]
+pub enum Transition {
+    Switch{
+        transition_name: String,
+    },
+    Trigger,
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum Hotkey {
+    List,
+    Trigger{
+        hotkey_name: String,
+    }
+}
+
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
@@ -153,6 +169,12 @@ pub enum Commands {
 
     #[clap(subcommand)]
     PreviewScene (PreviewScene),
+
+    #[clap(subcommand)]
+    Transition (Transition),
+
+    #[clap(subcommand)]
+    Hotkey (Hotkey),
 
     #[clap(subcommand)]
     Replay(Replay),
@@ -197,12 +219,5 @@ pub enum Commands {
         scene: String,
         source: String,
     },
-
-    TriggerHotkey {
-        name: String,
-    },
-
-    TriggerTransition{
-    }
 
 }
